@@ -46,8 +46,8 @@ class Login(object):
                                     headers=teacher_student_header,
                                     data=teacher_student_payload)
         print(request.headers['Content-Length'])
-        request = self.session.get("http://ssfw1.hlju.edu.cn/ssfw/common/ajaxLoginResult.jsp?success=true")
-        print(request.content)
+        #request = self.session.get("http://ssfw1.hlju.edu.cn/ssfw/common/ajaxLoginResult.jsp?success=true")
+        #print(request.content)
 
     def look_cj(self):
         request = self.session.get(look_cj)
