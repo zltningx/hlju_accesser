@@ -1,3 +1,6 @@
+"""玩笑，笑过给个赞呗
+"""
+
 from PIL import Image
 import requests
 from io import BytesIO

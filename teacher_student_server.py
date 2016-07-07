@@ -1,3 +1,11 @@
+"""使用前需安装 
+tesseract-ocr (自行google)
+
+强大的验证码识别。。
+成功率在70 以上
+"""
+
+
 from PIL import Image
 from bs4 import BeautifulSoup
 import requests
@@ -20,6 +28,7 @@ class Login(object):
         self.captcha = ''
         self.get_captcha_img()
         self.login_action()
+        # 示例程序 调来看看喽
         self.look_cj()
 
     def get_captcha_img(self):
@@ -27,6 +36,7 @@ class Login(object):
         img = Image.open(BytesIO(content.content))
         img.show()
         captcha = pytesseract.image_to_string(img)
+        # 比较图片与自动识别的结果
         text = input("识别为： " + captcha + '若出现错误请更改[否则回车跳过]: ')
         if text:
             captcha = text
@@ -45,9 +55,9 @@ class Login(object):
         request = self.session.post(check_student_url1,
                                     headers=teacher_student_header,
                                     data=teacher_student_payload)
-        print(request.headers['Content-Length'])
-        #request = self.session.get("http://ssfw1.hlju.edu.cn/ssfw/common/ajaxLoginResult.jsp?success=true")
-        #print(request.content)
+        # print(request.headers['Content-Length'])
+        # request = self.session.get("http://ssfw1.hlju.edu.cn/ssfw/common/ajaxLoginResult.jsp?success=true")
+        # print(request.content)
 
     def look_cj(self):
         request = self.session.get(look_cj)
@@ -78,8 +88,6 @@ class Login(object):
 
     def look_kb(self):
         request = self.session.get(look_kb)
-        soup = BeautifulSoup(request.content, "html5lib")
-        print(request.text)
 
     def look_py(self):
         request = self.session.get(look_py)
