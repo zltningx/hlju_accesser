@@ -1,10 +1,10 @@
-"""This is Some API of HLJU
+"""These are Some API of HLJU
 """
 
 # 校园信息门户网站 my.hlju.edu.cn 登录
 my_hlju_captcha_url = "http://my.hlju.edu.cn/captchaGenerate.portal"  # 获取验证码
 
-# 抓包过程中发现进行了一次数据库查询验证验证码是否正确，研究发现如果不正确网站会出现提示。未验证是否可以跳过此过程
+# 抓包过程中发现进行了一次数据库查询验证验证码是否正确，可以跳过此过程
 my_hlju_is_valid_url = "http://my.hlju.edu.cn/captchaValidate.portal?captcha={}&what=captcha&value={}"
 # 登录行为： POST 方法 需要提供post数据。 使用 payload: my_hlju_payload 
 my_hlju_login_url = "http://my.hlju.edu.cn/userPasswordValidate.portal"
@@ -75,6 +75,55 @@ teacher_student_header = {
 }
 
 
+# 选课网站 xsxk.hlju.edu.cn/xsxk
+xsxk_captcha = "http://xsxk.hlju.edu.cn/xsxk/servlet/ImageServlet"  # 获取验证码
+# 验证登录抓包发现的验证过程。 应该可以跳过
+xsxk_check_login = "http://xsxk.hlju.edu.cn/xsxk/loadData.xk?method=checkLogin&username={}&password={}&verifyCode={}"
+# 登录行为： POST 方法 需要提供post数据。使用 payload: xsxk_payload
+xsxk_login = "http://xsxk.hlju.edu.cn/xsxk/login.xk"
+
+# 比较屌的payload
+xsxk_payload = {
+    "username": '',
+    "password": '',
+    "verifyCode": ''
+}
+
+# header
+xsxk_header = {
+    'Host': 'xsxk.hlju.edu.cn',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.8.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Referer': 'http://xsxk.hlju.edu.cn/xsxk/logout.xk',
+}
+
+
+# 黑龙江大学图书馆
+lib_captcha = "http://210.46.107.77:8080/kaptcha"  # 获取验证码
+# 登录行为： POST 方法 需要提供post 数据。
+lib_login = "http://210.46.107.77:8080/pages/include/checklogin.jsp"
+
+# payload
+lib_payload = {
+    "username": "",
+    "password": "",
+    "loginType": "barCode",
+    "kaptcha": "",
+}
+
+# header
+lib_header = {
+    'Host': '210.46.107.77:8080',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0',
+    'Accept': '*/*',
+    'Accept-Encoding': 'gzip, deflate',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'X-Requested-With': 'XMLHttpRequest',
+    'Referer': 'http://210.46.107.77:8080/opac/login'
+}
 
 # 黑龙江大学身份认证平台 比较简单无需验证码
 ids_login_url = 'http://ids.hlju.edu.cn/amserver/UI/Login'
