@@ -3,6 +3,8 @@ tesseract-ocr (自行google)
 
 强大的验证码识别。。
 成功率在70 以上
+
+等我有空了我再来完成这个烂尾项目
 """
 
 
@@ -12,6 +14,7 @@ import requests
 from io import BytesIO
 import pytesseract
 from config import *
+import re
 
 
 class Course(object):
@@ -29,12 +32,13 @@ class Login(object):
         self.get_captcha_img()
         self.login_action()
         # 示例程序 调来看看喽
-        self.look_cj()
+        self.look_kb()
 
     def get_captcha_img(self):
         content = self.session.get(teacher_student_captcha_url)
         img = Image.open(BytesIO(content.content))
         img.show()
+        img.seek(0)
         captcha = pytesseract.image_to_string(img)
         # 比较图片与自动识别的结果
         text = input("识别为： " + captcha + '若出现错误请更改[否则回车跳过]: ')
@@ -47,17 +51,14 @@ class Login(object):
         self.captcha = captcha
 
     def login_action(self):
-        username = input("请输入学号: ")
-        password = input("请输入密码: ")
-        teacher_student_payload['j_username'] = username
-        teacher_student_payload['j_password'] = password
+        # username = input("请输入学号: ")
+        # password = input("请输入密码: ")
+        teacher_student_payload['j_username'] = '20146339'
+        teacher_student_payload['j_password'] = 'woaickywa0'
         teacher_student_payload['validateCode'] = self.captcha
         request = self.session.post(check_student_url1,
                                     headers=teacher_student_header,
                                     data=teacher_student_payload)
-        # print(request.headers['Content-Length'])
-        # request = self.session.get("http://ssfw1.hlju.edu.cn/ssfw/common/ajaxLoginResult.jsp?success=true")
-        # print(request.content)
 
     def look_cj(self):
         request = self.session.get(look_cj)
@@ -88,6 +89,13 @@ class Login(object):
 
     def look_kb(self):
         request = self.session.get(look_kb)
+        context = request.text
+        kb = re.findall(r"v>(.*)\n", context)
+        for i in kb:
+            if i.startswith("</di"):
+                i = i[6:]
+                print(i)
+
 
     def look_py(self):
         request = self.session.get(look_py)
