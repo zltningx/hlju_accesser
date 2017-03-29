@@ -9,7 +9,6 @@ tesseract-ocr (自行google)
 
 
 from PIL import Image
-from bs4 import BeautifulSoup
 import requests
 from io import BytesIO
 from pytesseract import image_to_string
@@ -28,7 +27,7 @@ def find_config():
         return cf
     except Exception as e:
         print("[*] 没有找到conf文件 使用后创建下次免登录～")
-        print(e)
+        print("[*] 若修改密码请修改 userInfo.conf 或者删除该文件～")
         return None
 
 
@@ -55,19 +54,24 @@ class Login(object):
         self.session = requests.session()
         self.captcha = ''
         self.get_captcha_img()
-        self.login_action()
-        # 示例程序 调来看看喽
-        self.look_cj()
-        self.look_kb()
+        if self.login_action():
+            # 示例程序 调来看看喽
+            self.look_cj()
+            self.look_kb()
 
     def get_captcha_img(self):
         content = self.session.get(teacher_student_captcha_url)
         img = Image.open(BytesIO(content.content))
         img.show()
         img.seek(0)
-        captcha = image_to_string(img)
+        try:
+            captcha = image_to_string(img).strip()
+        except Exception as e:
+            print("[*] 你好像没有安装 tesseract-ocr 不能自动识别验证码！请手动输入")
+            captcha = "--orc 未安装--"
+
         # 比较图片与自动识别的结果
-        text = input("识别为： " + captcha + '若出现错误请更改[否则回车跳过]: ')
+        text = input("识别为：" + captcha + '若出现错误请更改[否则回车跳过]: ')
         if text:
             captcha = text
         self.set_captcha(captcha)
@@ -78,13 +82,14 @@ class Login(object):
 
     def login_action(self):
         config_info = find_config()
+        frist = False
         if config_info:
             teacher_student_payload['j_username'] = config_info['USER_INFO']['username']
             teacher_student_payload['j_password'] = config_info['USER_INFO']['password']
         else:
             username = input("请输入学号: ")
             password = input("请输入密码: ")
-            create_config(username, password)
+            frist = True
             teacher_student_payload['j_username'] = username
             teacher_student_payload['j_password'] = password
 
@@ -92,33 +97,46 @@ class Login(object):
         request = self.session.post(check_student_url1,
                                     headers=teacher_student_header,
                                     data=teacher_student_payload)
+        if request.headers['Content-Length'] != '22':
+            print("[!] 登录失败～ 验证码错误或用户名密码错误")
+            return False
+        elif frist:
+            create_config(username, password)
+
+        return True
 
     def look_cj(self):
         request = self.session.get(look_cj)
-        soup = BeautifulSoup(request.content, "html5lib")
-        a = soup.find_all('tr')
-        courses = list()
-        count = 1
-        for i in a:
-            try:
-                if i['class'][0] == "t_con":
-                    if count != int(i.td.string):
-                        break
-                    item = i.find_all('td')
-                    tmp = Course(item[1].string, item[6].string,
-                                 item[7].span.strong.string, item[3].string)
-                    courses.append(tmp)
-                    count += 1
-            except:
-                pass
+        try:
+            weights = re.findall(r"middle\">(\d\.\d)</td>", request.text)
+            cj_list = re.findall(r"<span><strong>(\d+)</strong></span>|<font color=\"red\">(\d+)</font>", request.text)
+            cj_list.pop()
 
-        sum = 0
-        xuefen = 0
-        for i, course in enumerate(courses):
-            if not int(course.score) < 60:
-                sum += float(course.score) * float(course.weight)
-                xuefen += float(course.weight)
-        print(sum / (xuefen * 10))
+            def choose(my_t):
+                if my_t[0]:
+                    return int(my_t[0])
+                else:
+                    return int(my_t[1])
+            cj_list = [choose(cj) for cj in cj_list]
+        except Exception as e:
+            raise e
+        cj_sum = 0
+        weight_sum = 0
+        if weights and cj_list and len(weights) == len(cj_list):
+            for i, cj in enumerate(cj_list):
+                if cj >60:
+                    cj_sum += cj * float(weights[i])
+                    weight_sum += float(weights[i])
+        else:
+            print("[!] Get info failed")
+            return
+        if weight_sum:
+            res = cj_sum / (weight_sum * 10)
+        else:
+            print("[*] Zero division error")
+            return
+        print(res)
+        return res
 
     def look_kb(self):
         request = self.session.get(look_kb)
@@ -133,5 +151,5 @@ class Login(object):
     def look_py(self):
         request = self.session.get(look_py)
 
-
-new = Login()
+if __name__ == "__main__":
+    new = Login()
